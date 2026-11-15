@@ -1,0 +1,22 @@
+# VacinaSegura - Worker
+name = "vacinasegura"
+main = "src/index.ts"
+compatibility_date = "2026-11-01"
+
+[assets]
+directory = "./public"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "vacinasegura"
+database_id = "9baa2690-c66b-48e2-a85b-02ffa1db4476"
+
+[[kv_namespaces]]
+binding = "KV"
+id = "0b4388242534462992fb5a757fe09443"
+
+# ponte MQTT a cada minuto; limpeza de 90 dias às 03:00 UTC
+[triggers]
+crons = ["* * * * *", "0 3 * * *"]
+
+# segredos: npx wrangler secret put INGEST_TOKEN / ADMIN_TOKEN

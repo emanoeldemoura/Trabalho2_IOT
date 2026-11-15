@@ -1,0 +1,13 @@
+# No limite (parte 2): 8,5 °C liga o alarme depois do tempo (demo: 20 s)
+name: Limite 8,5 C toca
+version: 1
+author: VacinaSegura
+steps:
+  - wait-serial: 'Modo: demonstracao'
+  - set-control:
+      part-id: dht1
+      control: temperature
+      value: 8.5
+  - wait-serial: 'T=8.5C'
+  - wait-serial: '>>> ALERTA temperatura'
+  - wait-serial: '*** ALARME LIGADO (temperatura)'

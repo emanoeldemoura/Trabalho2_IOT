@@ -1,0 +1,850 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>VacinaSegura · Posto 01</title>
+<style>
+  :root {
+    color-scheme: light;
+    --bg: #f4f3ef; --surface: #ffffff; --surface-2: #f9f8f5; --line: #e6e4dd; --line-2: #efede7;
+    --ink: #1b1a17; --ink-2: #57554e; --ink-3: #8b8981;
+    --accent: #1f4e79; --accent-soft: #e8eef5;
+    --series: #2a78d6; --band: rgba(12, 163, 12, .09);
+    --good: #0ca30c; --warning: #e9a400; --critical: #d03b3b;
+    --good-ink: #0a6b0a; --warning-ink: #8a5a00; --critical-ink: #a82a2a;
+    --good-soft: #eaf6ea; --warning-soft: #fdf4dc; --critical-soft: #fbeaea;
+    --sombra: 0 1px 2px rgba(20, 20, 15, .04), 0 1px 1px rgba(20, 20, 15, .03);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      color-scheme: dark;
+      --bg: #121211; --surface: #1a1a19; --surface-2: #20201e; --line: #2e2e2b; --line-2: #262624;
+      --ink: #f0efec; --ink-2: #c3c2b7; --ink-3: #8f8e86;
+      --accent: #8fb3dc; --accent-soft: #1f2a36;
+      --series: #3987e5; --band: rgba(12, 163, 12, .14);
+      --good-ink: #5bcf5b; --warning-ink: #f2c04a; --critical-ink: #ef7171;
+      --good-soft: #17281a; --warning-soft: #2c2512; --critical-soft: #2f1a1a;
+      --sombra: none;
+    }
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: var(--bg); color: var(--ink); }
+  body { font: 14px/1.5 "Segoe UI", system-ui, -apple-system, Roboto, sans-serif; -webkit-font-smoothing: antialiased; }
+  .num { font-variant-numeric: tabular-nums; }
+  svg.ic { width: 18px; height: 18px; flex: none; stroke: currentColor; fill: none; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
+
+  /* estrutura */
+  .app { display: grid; grid-template-columns: 236px 1fr; min-height: 100vh; }
+  aside { background: var(--surface); border-right: 1px solid var(--line); padding: 22px 14px; display: flex; flex-direction: column; gap: 22px;
+          position: sticky; top: 0; height: 100vh; }
+  .marca { display: flex; gap: 10px; align-items: center; padding: 0 8px; }
+  .marca .logo { width: 34px; height: 34px; border-radius: 9px; background: var(--accent); color: #fff; display: grid; place-items: center; }
+  .marca .logo svg { width: 20px; height: 20px; stroke-width: 1.8; }
+  .marca b { display: block; font-size: 15px; letter-spacing: -.01em; }
+  .marca small { color: var(--ink-3); font-size: 12px; }
+  nav { display: flex; flex-direction: column; gap: 2px; }
+  nav button { all: unset; display: flex; gap: 10px; align-items: center; padding: 9px 10px; border-radius: 8px; color: var(--ink-2); cursor: pointer; font-weight: 500; }
+  nav button:hover { background: var(--surface-2); color: var(--ink); }
+  nav button[aria-current="page"] { background: var(--accent-soft); color: var(--accent); }
+  nav button:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+  .rodape-nav { margin-top: auto; padding: 12px 10px; border-top: 1px solid var(--line-2); font-size: 12px; color: var(--ink-3); display: grid; gap: 6px; }
+  .rodape-nav span { display: flex; align-items: center; gap: 8px; }
+  .ponto { width: 8px; height: 8px; border-radius: 50%; background: var(--ink-3); flex: none; }
+
+  main { padding: 28px 36px 48px; max-width: 1180px; width: 100%; }
+  .topo { display: flex; justify-content: space-between; align-items: flex-end; gap: 16px; margin-bottom: 22px; flex-wrap: wrap; }
+  .topo h1 { margin: 0; font-size: 22px; font-weight: 600; letter-spacing: -.02em; }
+  .topo p { margin: 2px 0 0; color: var(--ink-3); }
+  .chip { display: inline-flex; align-items: center; gap: 8px; padding: 5px 12px; border: 1px solid var(--line); border-radius: 999px;
+          background: var(--surface); font-size: 13px; font-weight: 500; color: var(--ink-2); }
+
+  .pagina { display: none; gap: 18px; }
+  .pagina.ativa { display: grid; }
+  .card { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 20px 22px; box-shadow: var(--sombra); }
+  .card h2 { margin: 0 0 4px; font-size: 14px; font-weight: 600; }
+  .card .desc { margin: 0 0 14px; color: var(--ink-3); font-size: 13px; }
+  .rotulo { color: var(--ink-3); font-size: 12px; text-transform: uppercase; letter-spacing: .06em; font-weight: 600; }
+
+  /* visão geral */
+  .grade-topo { display: grid; grid-template-columns: 1.55fr 1fr; gap: 18px; }
+  .hero { display: grid; gap: 14px; }
+  .hero .linha1 { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
+  .valor { font-size: 64px; font-weight: 300; letter-spacing: -.035em; line-height: 1; }
+  .valor small { font-size: 22px; color: var(--ink-3); font-weight: 400; margin-left: 4px; letter-spacing: 0; }
+  .selo { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px 4px 8px; border-radius: 999px; font-size: 13px; font-weight: 600; }
+  .selo svg.ic { width: 16px; height: 16px; stroke-width: 2.2; }
+  .selo.ok { background: var(--good-soft); color: var(--good-ink); }
+  .selo.aviso { background: var(--warning-soft); color: var(--warning-ink); }
+  .selo.critico { background: var(--critical-soft); color: var(--critical-ink); }
+  .selo.neutro { background: var(--surface-2); color: var(--ink-3); }
+  .escala { position: relative; height: 34px; }
+  .escala .trilho { position: absolute; left: 0; right: 0; top: 10px; height: 6px; border-radius: 3px; background: var(--line-2); }
+  .escala .faixa { position: absolute; top: 10px; height: 6px; border-radius: 3px; background: var(--good); opacity: .55; }
+  .escala .marcador { position: absolute; top: 4px; width: 3px; height: 18px; border-radius: 2px; background: var(--ink); transform: translateX(-1px); transition: left .5s ease; }
+  .escala .marcas { position: absolute; top: 20px; left: 0; right: 0; font-size: 11px; color: var(--ink-3); }
+  .escala .marcas span { position: absolute; transform: translateX(-50%); }
+  .mini { height: 54px; width: 100%; display: block; }
+  .rodape-hero { display: flex; justify-content: space-between; color: var(--ink-3); font-size: 12px; }
+
+  .lista { display: grid; margin: 0; }
+  .lista div { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--line-2); }
+  .lista div:last-child { border-bottom: 0; }
+  .lista dt { color: var(--ink-2); display: flex; gap: 8px; align-items: center; }
+  .lista dt svg.ic { color: var(--ink-3); width: 16px; height: 16px; }
+  .lista dd { margin: 0; font-weight: 600; }
+  .lado { display: grid; gap: 18px; align-content: start; }
+
+  button.btn { font: inherit; font-weight: 600; border-radius: 8px; border: 1px solid var(--line); background: var(--surface); color: var(--ink);
+               padding: 9px 14px; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; justify-content: center; }
+  button.btn:hover { background: var(--surface-2); }
+  button.btn.primario { background: var(--ink); color: var(--surface); border-color: var(--ink); }
+  button.btn.primario:hover { opacity: .9; }
+  button.btn.perigo { background: var(--critical); color: #fff; border-color: var(--critical); width: 100%; padding: 11px 14px; }
+  button.btn.perigo:hover { opacity: .92; }
+  .retorno { font-size: 13px; min-height: 20px; margin-top: 8px; display: flex; gap: 6px; align-items: center; color: var(--ink-3); }
+  .retorno.ok { color: var(--good-ink); } .retorno.erro { color: var(--critical-ink); }
+
+  .kpis { display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px; }
+  .kpi .v { font-size: 26px; font-weight: 500; letter-spacing: -.02em; margin-top: 6px; }
+  .kpi .s { color: var(--ink-3); font-size: 12px; }
+
+  /* gráfico */
+  .barra-ferr { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 8px; }
+  .seg { display: inline-flex; background: var(--surface-2); border: 1px solid var(--line); border-radius: 9px; padding: 3px; gap: 2px; }
+  .seg button { all: unset; padding: 5px 12px; border-radius: 6px; font-weight: 500; color: var(--ink-2); cursor: pointer; font-size: 13px; }
+  .seg button[aria-pressed="true"] { background: var(--surface); color: var(--ink); box-shadow: 0 1px 2px rgba(0,0,0,.08); }
+  .graf { position: relative; }
+  .graf svg { width: 100%; height: 300px; display: block; }
+  .graf .eixo { fill: var(--ink-3); font-size: 11px; }
+  .graf .grade { stroke: var(--line-2); stroke-width: 1; }
+  .graf .limite { stroke: var(--ink-3); stroke-width: 1; stroke-dasharray: 3 4; opacity: .7; }
+  .dica { position: absolute; pointer-events: none; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 7px 10px;
+          font-size: 12px; box-shadow: 0 4px 14px rgba(0,0,0,.08); white-space: nowrap; display: none; }
+  .legenda { display: flex; gap: 18px; color: var(--ink-3); font-size: 12px; margin-top: 6px; flex-wrap: wrap; }
+  .legenda span { display: inline-flex; align-items: center; gap: 6px; }
+  .legenda i { display: inline-block; width: 14px; height: 8px; border-radius: 2px; }
+
+  /* tabelas */
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th { text-align: left; font-weight: 600; color: var(--ink-3); font-size: 12px; text-transform: uppercase; letter-spacing: .05em; padding: 8px 10px; border-bottom: 1px solid var(--line); }
+  td { padding: 10px; border-bottom: 1px solid var(--line-2); }
+  td.d, th.d { text-align: right; }
+  tr:last-child td { border-bottom: 0; }
+  .tag { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 600; padding: 2px 9px; border-radius: 999px; background: var(--surface-2); color: var(--ink-2); }
+  .tag.critico { background: var(--critical-soft); color: var(--critical-ink); }
+  .rolagem { max-height: 460px; overflow: auto; }
+  .vazio { color: var(--ink-3); text-align: center; padding: 28px 0; }
+
+  /* mensagens */
+  .filtros { display: flex; gap: 6px; flex-wrap: wrap; }
+  .filtros button { all: unset; cursor: pointer; padding: 4px 11px; border-radius: 999px; border: 1px solid var(--line); font-size: 12px; font-weight: 500; color: var(--ink-2); }
+  .filtros button[aria-pressed="true"] { background: var(--ink); color: var(--surface); border-color: var(--ink); }
+  .log { font: 12px/1.55 ui-monospace, "Cascadia Mono", Consolas, monospace; }
+  .log td { vertical-align: top; padding: 7px 10px; }
+  .log .payload { color: var(--ink-2); word-break: break-all; }
+  .arvore { font: 12.5px/1.8 ui-monospace, "Cascadia Mono", Consolas, monospace; color: var(--ink-2); margin: 0; overflow-x: auto; }
+  .arvore b { color: var(--ink); font-weight: 600; }
+
+  /* administração */
+  .grade-adm { display: grid; grid-template-columns: 1.3fr 1fr; gap: 18px; align-items: start; }
+  .campos { display: grid; grid-template-columns: 1fr 1fr; gap: 14px 16px; }
+  label.campo { display: grid; gap: 5px; font-size: 13px; color: var(--ink-2); font-weight: 500; }
+  label.campo small { color: var(--ink-3); font-weight: 400; }
+  input { font: inherit; padding: 9px 11px; border-radius: 8px; border: 1px solid var(--line); background: var(--surface-2); color: var(--ink); width: 100%; }
+  input:focus { outline: 2px solid var(--accent); outline-offset: -1px; background: var(--surface); }
+  .acoes { display: flex; gap: 10px; margin-top: 16px; align-items: center; flex-wrap: wrap; }
+  .nota { color: var(--ink-3); font-size: 12px; margin: 10px 0 0; }
+
+  /* API e testes */
+  .endpoints { display: grid; gap: 8px; }
+  .endpoint { border: 1px solid var(--line); border-radius: 10px; overflow: hidden; background: var(--surface); }
+  .endpoint summary { display: flex; gap: 12px; align-items: center; padding: 10px 14px; cursor: pointer; list-style: none; }
+  .endpoint summary::-webkit-details-marker { display: none; }
+  .endpoint summary:hover { background: var(--surface-2); }
+  .endpoint[open] summary { border-bottom: 1px solid var(--line-2); background: var(--surface-2); }
+  .endpoint .caminho { font: 600 13px ui-monospace, "Cascadia Mono", Consolas, monospace; }
+  .endpoint .resumo-ep { color: var(--ink-3); font-size: 13px; margin-left: auto; text-align: right; }
+  .metodo { font: 700 11px ui-monospace, Consolas, monospace; padding: 3px 0; border-radius: 6px; width: 64px; text-align: center; flex: none; letter-spacing: .03em; }
+  .metodo.get { background: #e6effa; color: #1f5fa8; } .metodo.post { background: #e5f4e5; color: #0a6b0a; }
+  .metodo.put { background: #fbf1d6; color: #8a5a00; } .metodo.pub { background: #efeafb; color: #5a3fb8; }
+  .metodo.sub { background: var(--surface-2); color: var(--ink-2); border: 1px solid var(--line); }
+  @media (prefers-color-scheme: dark) { .metodo.get, .metodo.post, .metodo.put, .metodo.pub { filter: brightness(.85) saturate(1.2); } }
+  .endpoint .corpo { padding: 14px 16px 16px; display: grid; gap: 12px; }
+  .campos-tab td, .campos-tab th { padding: 6px 8px; }
+  .campos-tab td:first-child { font: 600 12px ui-monospace, Consolas, monospace; white-space: nowrap; }
+  pre.json { font: 12px/1.55 ui-monospace, "Cascadia Mono", Consolas, monospace; background: var(--surface-2); border: 1px solid var(--line-2);
+             border-radius: 8px; padding: 10px 12px; margin: 0; max-height: 240px; overflow: auto; white-space: pre-wrap; word-break: break-all; }
+  textarea { font: 12px/1.55 ui-monospace, "Cascadia Mono", Consolas, monospace; width: 100%; min-height: 120px; padding: 10px 12px;
+             border-radius: 8px; border: 1px solid var(--line); background: var(--surface-2); color: var(--ink); resize: vertical; }
+  .linha-acao { display: flex; gap: 14px; align-items: center; flex-wrap: wrap; }
+  .linha-acao label { display: inline-flex; gap: 6px; align-items: center; color: var(--ink-2); font-size: 13px; cursor: pointer; }
+  .status-http { font: 600 12px ui-monospace, Consolas, monospace; padding: 2px 8px; border-radius: 6px; }
+  .status-http.s2 { background: var(--good-soft); color: var(--good-ink); } .status-http.s4 { background: var(--critical-soft); color: var(--critical-ink); }
+
+  @media (max-width: 980px) {
+    .app { grid-template-columns: 1fr; }
+    aside { position: static; height: auto; flex-direction: row; align-items: center; flex-wrap: wrap; padding: 12px; gap: 12px; }
+    nav { flex-direction: row; flex-wrap: wrap; }
+    .rodape-nav { display: none; }
+    main { padding: 20px 16px 40px; }
+    .grade-topo, .grade-adm { grid-template-columns: 1fr; }
+    .kpis { grid-template-columns: repeat(2, 1fr); }
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <aside>
+    <div class="marca">
+      <div class="logo"><svg class="ic" viewBox="0 0 24 24"><path d="M10 13.5V5a2 2 0 1 1 4 0v8.5a4 4 0 1 1-4 0Z"/><path d="M12 9v6"/></svg></div>
+      <div><b>VacinaSegura</b><small>Posto 01 · Geladeira 01</small></div>
+    </div>
+    <nav aria-label="Seções">
+      <button data-pag="geral" aria-current="page"><svg class="ic" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg>Visão geral</button>
+      <button data-pag="historico"><svg class="ic" viewBox="0 0 24 24"><path d="M3 3v18h18"/><path d="m7 15 4-5 3 3 5-7"/></svg>Histórico</button>
+      <button data-pag="alertas"><svg class="ic" viewBox="0 0 24 24"><path d="M6 8a6 6 0 1 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>Alertas</button>
+      <button data-pag="mensagens"><svg class="ic" viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h10"/></svg>Mensagens MQTT</button>
+      <button data-pag="api"><svg class="ic" viewBox="0 0 24 24"><path d="m8 7-5 5 5 5M16 7l5 5-5 5M13.5 4l-3 16"/></svg>API e testes</button>
+      <button data-pag="admin"><svg class="ic" viewBox="0 0 24 24"><path d="M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3M2 14h4M10 8h4M18 16h4"/></svg>Administração</button>
+    </nav>
+    <div class="rodape-nav">
+      <span><i class="ponto" id="pontoBroker"></i><span id="txtBroker">Conectando ao broker…</span></span>
+      <span class="num">Faixa segura 2 a 8 °C</span>
+    </div>
+  </aside>
+
+  <main>
+    <div class="topo">
+      <div><h1 id="titulo">Visão geral</h1><p id="subtitulo">Situação atual da geladeira de vacinas</p></div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <span class="chip num" id="chipLeitura">Sem leitura</span>
+        <span class="chip"><i class="ponto" id="pontoDisp"></i><span id="txtDisp">Aguardando dispositivo</span></span>
+      </div>
+    </div>
+
+    <!-- Visão geral -->
+    <section class="pagina ativa" id="pag-geral">
+      <div class="grade-topo">
+        <div class="card hero" aria-live="polite">
+          <div class="linha1">
+            <div>
+              <div class="rotulo">Temperatura interna</div>
+              <div class="valor num" id="valorTemp">—<small>°C</small></div>
+            </div>
+            <span class="selo neutro" id="selo"><span id="seloIcone"></span><span id="seloTxt">Sem leitura</span></span>
+          </div>
+          <div class="escala" aria-hidden="true">
+            <div class="trilho"></div><div class="faixa" id="escFaixa"></div><div class="marcador" id="escMarcador" style="display:none"></div>
+            <div class="marcas" id="escMarcas"></div>
+          </div>
+          <svg class="mini" id="mini" preserveAspectRatio="none" aria-label="Últimos 30 minutos"></svg>
+          <div class="rodape-hero"><span>Últimos 30 minutos</span><span class="num" id="miniInfo"></span></div>
+        </div>
+
+        <div class="lado">
+          <div class="card">
+            <dl class="lista">
+              <div><dt><svg class="ic" viewBox="0 0 24 24"><rect x="5" y="2" width="14" height="20" rx="2"/><path d="M15 12h.01"/></svg>Porta</dt><dd id="txtPorta">—</dd></div>
+              <div><dt><svg class="ic" viewBox="0 0 24 24"><path d="M12 3s6 6.5 6 11a6 6 0 0 1-12 0c0-4.5 6-11 6-11Z"/></svg>Umidade</dt><dd class="num" id="txtUmid">—</dd></div>
+              <div><dt><svg class="ic" viewBox="0 0 24 24"><path d="M6 8a6 6 0 1 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/></svg>Alarme</dt><dd id="txtAlarme">—</dd></div>
+              <div><dt><svg class="ic" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>Modo</dt><dd id="txtModo">—</dd></div>
+            </dl>
+          </div>
+          <div class="card">
+            <h2>Sirene</h2>
+            <p class="desc">Silenciar desliga só a sirene. O alarme continua até a temperatura voltar para 3–7 °C.</p>
+            <button class="btn perigo" id="btnSilenciar"><svg class="ic" viewBox="0 0 24 24"><path d="M11 5 6 9H2v6h4l5 4V5Z"/><path d="m22 9-6 6M16 9l6 6"/></svg>Silenciar alarme</button>
+            <div class="retorno" id="respSilenciar" role="status"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="kpis">
+        <div class="card kpi"><div class="rotulo">Tempo na faixa</div><div class="v num" id="kpiFaixa">—</div><div class="s">últimas 24 h</div></div>
+        <div class="card kpi"><div class="rotulo">Máxima</div><div class="v num" id="kpiMax">—</div><div class="s num" id="kpiMaxSub">últimas 24 h</div></div>
+        <div class="card kpi"><div class="rotulo">Mínima</div><div class="v num" id="kpiMin">—</div><div class="s num" id="kpiMinSub">últimas 24 h</div></div>
+        <div class="card kpi"><div class="rotulo">Alertas</div><div class="v num" id="kpiAlertas">—</div><div class="s">últimas 24 h</div></div>
+      </div>
+    </section>
+
+    <!-- Histórico -->
+    <section class="pagina" id="pag-historico">
+      <div class="card">
+        <div class="barra-ferr">
+          <div><h2>Temperatura</h2><p class="desc" style="margin:0">Média por minuto, com a faixa segura destacada</p></div>
+          <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+            <div class="seg" role="group" aria-label="Período">
+              <button data-horas="1">1 h</button><button data-horas="6">6 h</button>
+              <button data-horas="24" aria-pressed="true">24 h</button><button data-horas="168">7 dias</button>
+            </div>
+            <button class="btn" id="btnCsv"><svg class="ic" viewBox="0 0 24 24"><path d="M12 3v12m0 0-4-4m4 4 4-4M4 21h16"/></svg>CSV</button>
+          </div>
+        </div>
+        <div class="graf"><svg id="svg" role="img" aria-label="Gráfico da temperatura no período"></svg><div class="dica" id="dica"></div></div>
+        <div class="legenda"><span><i style="background:var(--series);height:2px"></i>Temperatura</span><span><i style="background:var(--band)"></i>Faixa 2–8 °C</span><span>Espaço na linha = sem dados</span></div>
+      </div>
+      <div class="card">
+        <h2>Resumo por hora</h2>
+        <p class="desc">Máxima, mínima e minutos fora da faixa em cada hora do período</p>
+        <div class="rolagem">
+          <table class="num"><thead><tr><th>Hora</th><th class="d">Máx (°C)</th><th class="d">Mín (°C)</th><th class="d">Min. fora</th></tr></thead>
+          <tbody id="tbResumo"><tr><td colspan="4" class="vazio">Carregando…</td></tr></tbody></table>
+        </div>
+      </div>
+    </section>
+
+    <!-- Alertas -->
+    <section class="pagina" id="pag-alertas">
+      <div class="card">
+        <div class="barra-ferr">
+          <div><h2>Alertas registrados</h2><p class="desc" style="margin:0">Início, atendimento e fim de cada ocorrência</p></div>
+          <div class="seg" role="group" aria-label="Período dos alertas">
+            <button data-horas-a="24" aria-pressed="true">24 h</button><button data-horas-a="168">7 dias</button>
+          </div>
+        </div>
+        <div class="rolagem">
+          <table class="num"><thead><tr><th>Tipo</th><th>Início</th><th>Fim</th><th class="d">Pior (°C)</th><th>Atendido</th></tr></thead>
+          <tbody id="tbAlertas"><tr><td colspan="5" class="vazio">Carregando…</td></tr></tbody></table>
+        </div>
+      </div>
+    </section>
+
+    <!-- Mensagens -->
+    <section class="pagina" id="pag-mensagens">
+      <div class="grade-adm">
+        <div class="card">
+          <div class="barra-ferr">
+            <div><h2>Mensagens recebidas</h2><p class="desc" style="margin:0">Tráfego ao vivo no broker (somente leitura)</p></div>
+            <button class="btn" id="btnPausa">Pausar</button>
+          </div>
+          <div class="filtros" id="filtros" style="margin:8px 0 10px">
+            <button data-f="" aria-pressed="true">Todos</button><button data-f="telemetria">telemetria</button><button data-f="estado">estado</button>
+            <button data-f="alerta">alerta</button><button data-f="comando">comando</button><button data-f="ack">ack</button>
+          </div>
+          <div class="rolagem"><table class="log"><tbody id="tbLog"><tr><td class="vazio">Aguardando mensagens…</td></tr></tbody></table></div>
+        </div>
+        <div class="card">
+          <h2>Tópicos</h2>
+          <p class="desc">Cada tópico tem um único publicador</p>
+<pre class="arvore">sis1a/emanoel_iot/posto01/geladeira01/
+├─ <b>telemetria</b>  ESP32  → painel
+├─ <b>estado</b>      ESP32  → painel  (retido)
+├─ <b>alerta</b>      ESP32  → painel
+├─ <b>comando</b>     painel → ESP32   (assinado)
+├─ <b>ack</b>         ESP32  → painel
+├─ <b>lote</b>        ESP32  → nuvem   (assinado)
+├─ <b>lote_ack</b>    nuvem  → ESP32   (assinado)
+└─ <b>config</b>      nuvem  → ESP32   (assinado)</pre>
+          <p class="nota">Broker test.mosquitto.org — TLS 8886 (ESP32) e WSS 8081 (painel).</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- API e testes -->
+    <section class="pagina" id="pag-api">
+      <div class="card">
+        <h2>Tópicos MQTT</h2>
+        <p class="desc">Formato de cada mensagem. Só o tópico <b>comando</b> pode ser enviado daqui — os demais são publicados pelo ESP32 ou pela nuvem.</p>
+        <div class="endpoints" id="listaTopicos"></div>
+      </div>
+      <div class="card">
+        <h2>Rotas HTTP do Worker</h2>
+        <p class="desc">https://vacinasegura.emanoel-moura.workers.dev — rotas de gravação exigem token (sem token: 401).</p>
+        <div class="endpoints" id="listaRotas"></div>
+      </div>
+    </section>
+
+    <!-- Administração -->
+    <section class="pagina" id="pag-admin">
+      <div class="grade-adm">
+        <div class="card">
+          <h2>Limites da geladeira</h2>
+          <p class="desc">Gravados na nuvem (KV). O ESP32 recebe os novos valores em até 1 minuto, sem regravar a placa.</p>
+          <div class="campos">
+            <label class="campo">Mínima (°C)<input type="number" step="0.1" id="cfg_t_min"></label>
+            <label class="campo">Máxima (°C)<input type="number" step="0.1" id="cfg_t_max"></label>
+            <label class="campo">Desliga a partir de (°C)<input type="number" step="0.1" id="cfg_t_desliga_min"></label>
+            <label class="campo">Desliga até (°C)<input type="number" step="0.1" id="cfg_t_desliga_max"></label>
+            <label class="campo">Tempo fora da faixa até alarmar <small>segundos</small><input type="number" step="1" id="cfg_tempo_alarme_s"></label>
+            <label class="campo">Tempo de porta aberta até alertar <small>segundos</small><input type="number" step="1" id="cfg_tempo_porta_s"></label>
+          </div>
+          <div class="acoes">
+            <button class="btn primario" id="btnSalvarCfg">Salvar limites</button>
+            <button class="btn" id="btnLerCfg">Recarregar</button>
+          </div>
+          <div class="retorno" id="respCfg" role="status"></div>
+          <p class="nota">No modo demonstração o ESP32 usa tempos curtos fixos (20 s e 10 s).</p>
+        </div>
+
+        <div class="lado">
+          <div class="card">
+            <h2>Modo de operação</h2>
+            <p class="desc">Real: 5 min / 1 min · Demonstração: 20 s / 10 s</p>
+            <div class="seg" role="group" aria-label="Modo">
+              <button id="btnReal" aria-pressed="false">Real</button><button id="btnDemo" aria-pressed="false">Demonstração</button>
+            </div>
+            <div class="retorno" id="respModo" role="status"></div>
+          </div>
+          <div class="card">
+            <h2>Credenciais</h2>
+            <p class="desc">Ficam só neste navegador e nunca são enviadas pelo MQTT.</p>
+            <label class="campo">Senha dos comandos<input type="password" id="inSenha" autocomplete="off" placeholder="assina silenciar e modo"></label>
+            <label class="campo" style="margin-top:12px">Token de administração<input type="password" id="inAdmin" autocomplete="off" placeholder="permite alterar os limites"></label>
+            <div class="acoes"><button class="btn primario" id="btnSalvarCred">Salvar</button><button class="btn" id="btnApagarCred">Esquecer</button></div>
+            <div class="retorno" id="respCred"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+</div>
+
+<script src="vendor/mqtt.min.js"></script>
+<script>
+"use strict";
+const BASE = "sis1a/emanoel_iot/posto01/geladeira01";
+const BROKER = "wss://test.mosquitto.org:8081";
+const DISP = "geladeira01";
+const FUSO = "America/Sao_Paulo";
+const FAIXA = { min: 2, max: 8, aviso: 0.5 };
+const ESPERA_ACK_MS = 5000;
+
+const $ = (id) => document.getElementById(id);
+const fmt = (ts, o) => new Date(ts * 1000).toLocaleString("pt-BR", { timeZone: FUSO, ...o });
+const hhmm = (ts) => fmt(ts, { hour: "2-digit", minute: "2-digit" });
+const hhmmss = (ts) => fmt(ts, { hour: "2-digit", minute: "2-digit", second: "2-digit" });
+const ddhh = (ts) => fmt(ts, { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" });
+const n1 = (v) => (v === null || v === undefined || isNaN(v)) ? "—" : Number(v).toFixed(1).replace(".", ",");
+const esc = (s) => String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+
+const ICONES = {
+  ok: '<svg class="ic" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="m8 12 3 3 5-6"/></svg>',
+  aviso: '<svg class="ic" viewBox="0 0 24 24"><path d="M12 3 2 20h20L12 3Z"/><path d="M12 10v4M12 17h.01"/></svg>',
+  critico: '<svg class="ic" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="m9 9 6 6M15 9l-6 6"/></svg>',
+  relogio: '<svg class="ic" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>',
+};
+
+let horas = 24, horasAlertas = 24;
+let pontos = [];
+let estado = {};
+let recebeuAoVivo = false;
+
+// navegação
+const TITULOS = {
+  geral: ["Visão geral", "Situação atual da geladeira de vacinas"],
+  historico: ["Histórico", "Registros gravados no banco"],
+  alertas: ["Alertas", "Ocorrências de temperatura, porta e sensor"],
+  mensagens: ["Mensagens MQTT", "O que está passando pelo broker agora"],
+  api: ["API e testes", "Formato das mensagens e rotas, com envio de teste"],
+  admin: ["Administração", "Limites, modo de operação e credenciais"],
+};
+const paginaAtiva = () => (document.querySelector(".pagina.ativa")?.id || "").replace("pag-", "");
+function irPara(p) {
+  document.querySelectorAll("nav button").forEach(b => {
+    if (b.dataset.pag === p) b.setAttribute("aria-current", "page"); else b.removeAttribute("aria-current");
+  });
+  document.querySelectorAll(".pagina").forEach(s => s.classList.toggle("ativa", s.id === "pag-" + p));
+  $("titulo").textContent = TITULOS[p][0]; $("subtitulo").textContent = TITULOS[p][1];
+  if (p === "historico") desenharGrafico();
+  if (p === "mensagens") desenharLog();
+  if (p === "admin") carregarConfig();
+  history.replaceState(null, "", "#" + p);
+}
+document.querySelectorAll("nav button").forEach(b => b.onclick = () => irPara(b.dataset.pag));
+
+// temperatura
+function classificar(t) {
+  if (t === null || t === undefined || isNaN(t)) return { cls: "critico", txt: "Sem leitura do sensor" };
+  if (t < FAIXA.min || t > FAIXA.max) return { cls: "critico", txt: "Fora da faixa" };
+  if (t < FAIXA.min + FAIXA.aviso || t > FAIXA.max - FAIXA.aviso) return { cls: "aviso", txt: "Perto do limite" };
+  return { cls: "ok", txt: "Na faixa" };
+}
+const ESC = { min: -2, max: 12 };
+const pos = (t) => Math.max(0, Math.min(100, (t - ESC.min) / (ESC.max - ESC.min) * 100));
+$("escFaixa").style.left = pos(FAIXA.min) + "%";
+$("escFaixa").style.width = (pos(FAIXA.max) - pos(FAIXA.min)) + "%";
+$("escMarcas").innerHTML = [0, 2, 4, 6, 8, 10].map(v => `<span style="left:${pos(v)}%">${v}°</span>`).join("");
+
+function mostrarLeitura(m, aoVivo = true) {
+  if (aoVivo) recebeuAoVivo = true;
+  const s = classificar(m.temp_c);
+  $("valorTemp").innerHTML = `${n1(m.temp_c)}<small>°C</small>`;
+  $("selo").className = "selo " + s.cls;
+  $("seloIcone").innerHTML = ICONES[s.cls];
+  $("seloTxt").textContent = s.txt;
+  if (m.temp_c != null) { $("escMarcador").style.display = ""; $("escMarcador").style.left = pos(m.temp_c) + "%"; }
+  $("txtPorta").textContent = m.porta_aberta ? "Aberta" : "Fechada";
+  $("txtPorta").style.color = m.porta_aberta ? "var(--warning-ink)" : "";
+  $("txtUmid").textContent = m.umid_pct != null ? m.umid_pct + " %" : "—";
+  $("chipLeitura").textContent = aoVivo ? "Ao vivo · " + hhmmss(m.ts) : "Último registro · " + ddhh(m.ts);
+  if (aoVivo && m.ts && m.temp_c != null) {
+    pontos.push({ ts: m.ts, temp_c: m.temp_c });
+    desenharMini();
+    if (paginaAtiva() === "historico") desenharGrafico();
+  }
+}
+
+function mostrarEstado(e) {
+  estado = e;
+  const on = e.online === true;
+  $("pontoDisp").style.background = on ? "var(--good)" : "var(--critical)";
+  $("txtDisp").textContent = on ? "Dispositivo online" : "Dispositivo offline";
+  if (!on) { $("txtAlarme").textContent = "Sem contato"; $("txtAlarme").style.color = "var(--ink-3)"; return; }
+  $("txtAlarme").textContent = e.alarme ? (e.silenciado ? "Ligado · sirene silenciada" : "Ligado") : "Desligado";
+  $("txtAlarme").style.color = e.alarme ? "var(--critical-ink)" : "";
+  $("txtModo").textContent = e.modo === "demo" ? "Demonstração" : "Real";
+  $("btnReal").setAttribute("aria-pressed", e.modo === "real");
+  $("btnDemo").setAttribute("aria-pressed", e.modo === "demo");
+}
+
+// MQTT
+const cliente = mqtt.connect(BROKER, { reconnectPeriod: 3000, connectTimeout: 10000, clean: true });
+cliente.on("connect", () => {
+  cliente.subscribe(["telemetria", "estado", "alerta", "ack", "comando"].map(t => `${BASE}/${t}`));
+  $("pontoBroker").style.background = "var(--good)"; $("txtBroker").textContent = "Conectado ao broker (WSS)";
+});
+cliente.on("offline", () => { $("pontoBroker").style.background = "var(--warning)"; $("txtBroker").textContent = "Sem conexão com o broker"; });
+cliente.on("message", (topico, buf, pkt) => {
+  const t = topico.slice(BASE.length + 1);
+  const txt = buf.toString();
+  registrarLog(t, txt, pkt.retain);
+  let m; try { m = JSON.parse(txt); } catch { return; }
+  if (t === "telemetria") mostrarLeitura(m);
+  else if (t === "estado") mostrarEstado(m);
+  else if (t === "alerta") carregarAlertas();
+  else if (t === "ack") receberAck(m);
+});
+
+// comandos: HMAC-SHA256(senha, "cmd|valor|id|nonce"); o nonce vem do estado
+async function assinar(senha, texto) {
+  const k = await crypto.subtle.importKey("raw", new TextEncoder().encode(senha), { name: "HMAC", hash: "SHA-256" }, false, ["sign"]);
+  const sig = await crypto.subtle.sign("HMAC", k, new TextEncoder().encode(texto));
+  return [...new Uint8Array(sig)].map(b => b.toString(16).padStart(2, "0")).join("");
+}
+const pendentes = new Map();
+function retorno(el, cls, texto, icone) { el.className = "retorno " + (cls || ""); el.innerHTML = (icone ? ICONES[icone] : "") + `<span>${esc(texto)}</span>`; }
+
+async function enviarComando(cmd, valor, el) {
+  const senha = localStorage.getItem("vs_senha");
+  if (!senha) { retorno(el, "erro", "Cadastre a senha dos comandos em Administração.", "aviso"); return; }
+  if (!cliente.connected) { retorno(el, "erro", "Painel sem conexão com o broker.", "critico"); return; }
+  if (!estado.online || !estado.nonce) { retorno(el, "erro", "Dispositivo offline.", "critico"); return; }
+  const id = crypto.getRandomValues(new Uint32Array(1))[0].toString(16);
+  const msg = { cmd, id, nonce: estado.nonce };
+  if (valor) msg.valor = valor;
+  msg.assinatura = await assinar(senha, `${cmd}|${valor || ""}|${id}|${estado.nonce}`);
+  retorno(el, "", "Enviando…", "relogio");
+  // só confirma com o ack de mesmo id
+  const timer = setTimeout(() => { pendentes.delete(id); retorno(el, "erro", "Não confirmado — dispositivo pode estar offline ou a senha está incorreta.", "aviso"); }, ESPERA_ACK_MS);
+  pendentes.set(id, { el, timer, t0: Date.now() });
+  cliente.publish(`${BASE}/comando`, JSON.stringify(msg));
+}
+function receberAck(a) {
+  const p = pendentes.get(a.id);
+  if (!p || a.ok !== true) return;
+  clearTimeout(p.timer); pendentes.delete(a.id);
+  retorno(p.el, "ok", `Confirmado pelo dispositivo em ${((Date.now() - p.t0) / 1000).toFixed(1).replace(".", ",")} s`, "ok");
+}
+$("btnSilenciar").onclick = () => enviarComando("silenciar", null, $("respSilenciar"));
+$("btnReal").onclick = () => enviarComando("modo", "real", $("respModo"));
+$("btnDemo").onclick = () => enviarComando("modo", "demo", $("respModo"));
+
+// credenciais
+function mostrarCred() {
+  const s = !!localStorage.getItem("vs_senha"), a = !!localStorage.getItem("vs_admin");
+  retorno($("respCred"), s && a ? "ok" : "", `Senha dos comandos: ${s ? "salva" : "não cadastrada"} · Token de administração: ${a ? "salvo" : "não cadastrado"}`, s && a ? "ok" : null);
+}
+$("btnSalvarCred").onclick = () => {
+  if ($("inSenha").value.trim()) localStorage.setItem("vs_senha", $("inSenha").value.trim());
+  if ($("inAdmin").value.trim()) localStorage.setItem("vs_admin", $("inAdmin").value.trim());
+  $("inSenha").value = ""; $("inAdmin").value = ""; mostrarCred(); carregarConfig();
+};
+$("btnApagarCred").onclick = () => { localStorage.removeItem("vs_senha"); localStorage.removeItem("vs_admin"); mostrarCred(); };
+mostrarCred();
+
+// limites (KV): GET/PUT /config com o token de administração
+const CAMPOS = ["t_min", "t_max", "t_desliga_min", "t_desliga_max", "tempo_alarme_s", "tempo_porta_s"];
+async function carregarConfig() {
+  const tk = localStorage.getItem("vs_admin");
+  if (!tk) { retorno($("respCfg"), "", "Cadastre o token de administração para ver e alterar os limites."); return; }
+  try {
+    const r = await fetch(`/config/${DISP}`, { headers: { Authorization: "Bearer " + tk }, cache: "no-store" });
+    if (r.status === 401) { retorno($("respCfg"), "erro", "Token de administração inválido.", "critico"); return; }
+    const c = await r.json();
+    CAMPOS.forEach(k => $("cfg_" + k).value = c[k]);
+    retorno($("respCfg"), "", "Valores atuais carregados da nuvem.");
+  } catch { retorno($("respCfg"), "erro", "Não foi possível carregar os limites.", "critico"); }
+}
+$("btnLerCfg").onclick = carregarConfig;
+$("btnSalvarCfg").onclick = async () => {
+  const tk = localStorage.getItem("vs_admin");
+  if (!tk) { retorno($("respCfg"), "erro", "Cadastre o token de administração.", "aviso"); return; }
+  const corpo = {};
+  CAMPOS.forEach(k => corpo[k] = Number($("cfg_" + k).value));
+  try {
+    const r = await fetch(`/config/${DISP}`, { method: "PUT", headers: { Authorization: "Bearer " + tk, "Content-Type": "application/json" }, body: JSON.stringify(corpo) });
+    const j = await r.json();
+    if (r.ok) retorno($("respCfg"), "ok", "Limites salvos. O ESP32 aplica em até 1 minuto.", "ok");
+    else retorno($("respCfg"), "erro", r.status === 401 ? "Token de administração inválido." : (j.erro || "Valores inválidos."), "critico");
+  } catch { retorno($("respCfg"), "erro", "Falha ao salvar.", "critico"); }
+};
+
+// log de mensagens
+const log = []; let pausado = false, filtro = "";
+function registrarLog(t, txt, retido) {
+  const el = document.getElementById("ultimo-" + t);   // "último recebido" na aba API
+  if (el) el.textContent = formatarJson(txt);
+  if (pausado) return;
+  log.unshift({ ts: Date.now() / 1000, t, txt, retido });
+  if (log.length > 200) log.pop();
+  if (paginaAtiva() === "mensagens") desenharLog();
+}
+function desenharLog() {
+  const itens = log.filter(l => !filtro || l.t === filtro);
+  $("tbLog").innerHTML = itens.length ? itens.map(l => `<tr><td class="num" style="white-space:nowrap;color:var(--ink-3)">${hhmmss(l.ts)}</td>
+    <td style="white-space:nowrap"><span class="tag">${esc(l.t)}</span>${l.retido ? ' <span class="tag">retida</span>' : ""}</td>
+    <td class="payload">${esc(l.txt.length > 260 ? l.txt.slice(0, 260) + "…" : l.txt)}</td></tr>`).join("")
+    : `<tr><td class="vazio">Nenhuma mensagem ${filtro ? "neste tópico " : ""}ainda.</td></tr>`;
+}
+$("btnPausa").onclick = () => { pausado = !pausado; $("btnPausa").textContent = pausado ? "Continuar" : "Pausar"; };
+document.querySelectorAll("#filtros button").forEach(b => b.onclick = () => {
+  document.querySelectorAll("#filtros button").forEach(x => x.setAttribute("aria-pressed", x === b));
+  filtro = b.dataset.f; desenharLog();
+});
+
+// histórico (rotas do Worker)
+async function getJson(rota) { const r = await fetch(rota, { cache: "no-store" }); if (!r.ok) throw new Error(rota); return r.json(); }
+
+async function carregarHistorico() {
+  try {
+    const h = await getJson(`/historico?horas=${Math.max(horas, 24)}`);
+    const ultimoBanco = h.pontos.length ? h.pontos[h.pontos.length - 1].ts + 60 : h.desde;
+    pontos = h.pontos.filter(p => p.temp_c !== null).concat(pontos.filter(p => p.ts >= ultimoBanco));
+    calcularKpis(h.pontos.filter(p => p.ts >= Date.now() / 1000 - 86400));
+    if (!recebeuAoVivo && h.pontos.length) {   // sem dado ao vivo: mostra o último do banco
+      const u = h.pontos[h.pontos.length - 1];
+      mostrarLeitura({ ts: u.ts, temp_c: u.temp_c, umid_pct: u.umid_pct, porta_aberta: !!u.porta_aberta }, false);
+    }
+    desenharMini(); desenharGrafico();
+  } catch (e) { console.error(e); }
+}
+function calcularKpis(lista) {
+  const v = lista.filter(p => p.temp_c !== null);
+  if (!v.length) return;
+  const dentro = v.filter(p => p.temp_c >= FAIXA.min && p.temp_c <= FAIXA.max).length;
+  $("kpiFaixa").textContent = (100 * dentro / v.length).toFixed(1).replace(".", ",") + " %";
+  const max = v.reduce((a, b) => b.temp_c > a.temp_c ? b : a), min = v.reduce((a, b) => b.temp_c < a.temp_c ? b : a);
+  $("kpiMax").textContent = n1(max.temp_c) + " °C"; $("kpiMaxSub").textContent = "às " + ddhh(max.ts);
+  $("kpiMin").textContent = n1(min.temp_c) + " °C"; $("kpiMinSub").textContent = "às " + ddhh(min.ts);
+}
+async function carregarResumo() {
+  try {
+    const r = await getJson(`/resumo?horas=${horas}`);
+    $("tbResumo").innerHTML = r.horas.slice().reverse().map(h => {
+      const fora = h.minutos_fora > 0;
+      return `<tr><td>${ddhh(h.hora_ts)}</td><td class="d">${n1(h.t_max)}</td><td class="d">${n1(h.t_min)}</td>
+        <td class="d">${fora ? `<span class="tag critico">${h.minutos_fora}</span>` : "0"}</td></tr>`;
+    }).join("") || `<tr><td colspan="4" class="vazio">Sem registros no período.</td></tr>`;
+  } catch (e) { console.error(e); }
+}
+const NOMES = { temperatura: "Temperatura", porta: "Porta aberta", sensor_falha: "Falha do sensor" };
+async function carregarAlertas() {
+  try {
+    const [r24, rSel] = await Promise.all([getJson(`/alertas?horas=24`), getJson(`/alertas?horas=${horasAlertas}`)]);
+    $("kpiAlertas").textContent = r24.alertas.length;
+    $("tbAlertas").innerHTML = rSel.alertas.map(a => `<tr><td><span class="tag ${a.ts_fim ? "" : "critico"}">${esc(NOMES[a.tipo] || a.tipo)}</span></td>
+      <td>${ddhh(a.ts_inicio)}</td><td>${a.ts_fim ? hhmm(a.ts_fim) : '<span class="tag critico">em aberto</span>'}</td>
+      <td class="d">${n1(a.temp_max_c)}</td><td>${a.ts_atendido ? hhmm(a.ts_atendido) : "—"}</td></tr>`).join("")
+      || `<tr><td colspan="5" class="vazio">Nenhum alerta no período.</td></tr>`;
+  } catch (e) { console.error(e); }
+}
+
+// mini gráfico (30 min)
+function desenharMini() {
+  const svg = $("mini"), W = 600, H = 54, agora = Date.now() / 1000, x0 = agora - 1800;
+  const vis = pontos.filter(p => p.ts >= x0).sort((a, b) => a.ts - b.ts);
+  const ts = vis.map(p => p.temp_c);
+  const y0 = Math.min(FAIXA.min - 1, ...ts), y1 = Math.max(FAIXA.max + 1, ...ts);
+  const X = t => (t - x0) / 1800 * W, Y = v => 4 + (y1 - v) / (y1 - y0) * (H - 8);
+  let d = "", ant = null;
+  for (const p of vis) { d += (ant === null || p.ts - ant > 180 ? "M" : "L") + X(p.ts).toFixed(1) + "," + Y(p.temp_c).toFixed(1); ant = p.ts; }
+  svg.setAttribute("viewBox", `0 0 ${W} ${H}`);
+  svg.innerHTML = `<rect x="0" y="${Y(FAIXA.max)}" width="${W}" height="${Y(FAIXA.min) - Y(FAIXA.max)}" fill="var(--band)"/>
+    <path d="${d}" fill="none" stroke="var(--series)" stroke-width="2" vector-effect="non-scaling-stroke" stroke-linejoin="round"/>`;
+  $("miniInfo").textContent = vis.length ? `mín ${n1(Math.min(...ts))} · máx ${n1(Math.max(...ts))} °C` : "sem dados recentes";
+}
+
+// gráfico do histórico
+function desenharGrafico() {
+  const svg = $("svg");
+  if (!svg.clientWidth) return;
+  const W = svg.clientWidth, H = 300, m = { t: 12, r: 12, b: 26, l: 36 };
+  const agora = Date.now() / 1000, x0 = agora - horas * 3600, x1 = agora;
+  const vis = pontos.filter(p => p.ts >= x0).sort((a, b) => a.ts - b.ts);
+  const ts = vis.map(p => p.temp_c);
+  const yMin = Math.floor(Math.min(0, ...ts) - 1), yMax = Math.ceil(Math.max(10, ...ts) + 1);
+  const X = t => m.l + (t - x0) / (x1 - x0) * (W - m.l - m.r);
+  const Y = v => m.t + (yMax - v) / (yMax - yMin) * (H - m.t - m.b);
+  let s = `<rect x="${m.l}" y="${Y(FAIXA.max)}" width="${W - m.l - m.r}" height="${Y(FAIXA.min) - Y(FAIXA.max)}" fill="var(--band)"/>`;
+  const passo = (yMax - yMin) > 20 ? 5 : 2;
+  for (let v = Math.ceil(yMin / passo) * passo; v <= yMax; v += passo)
+    s += `<line class="grade" x1="${m.l}" x2="${W - m.r}" y1="${Y(v)}" y2="${Y(v)}"/><text class="eixo" x="${m.l - 8}" y="${Y(v) + 4}" text-anchor="end">${v}°</text>`;
+  for (const l of [FAIXA.min, FAIXA.max]) s += `<line class="limite" x1="${m.l}" x2="${W - m.r}" y1="${Y(l)}" y2="${Y(l)}"/>`;
+  for (let i = 0; i <= 6; i++) {
+    const t = x0 + i * (x1 - x0) / 6;
+    s += `<text class="eixo" x="${X(t)}" y="${H - 6}" text-anchor="${i === 0 ? "start" : i === 6 ? "end" : "middle"}">${horas > 24 ? ddhh(t) : hhmm(t)}</text>`;
+  }
+  let d = "", ant = null;
+  for (const p of vis) { d += (ant === null || p.ts - ant > 180 ? "M" : "L") + X(p.ts).toFixed(1) + "," + Y(p.temp_c).toFixed(1); ant = p.ts; }
+  s += `<path d="${d}" fill="none" stroke="var(--series)" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>`;
+  if (vis.length) { const u = vis[vis.length - 1]; s += `<circle cx="${X(u.ts)}" cy="${Y(u.temp_c)}" r="4.5" fill="var(--series)" stroke="var(--surface)" stroke-width="2"/>`; }
+  else s += `<text class="eixo" x="${W / 2}" y="${H / 2}" text-anchor="middle">Sem registros no período</text>`;
+  s += `<line id="cruz" stroke="var(--ink-3)" stroke-width="1" y1="${m.t}" y2="${H - m.b}" style="display:none"/>
+        <circle id="cruzPt" r="5" fill="var(--series)" stroke="var(--surface)" stroke-width="2" style="display:none"/>
+        <rect id="alvo" x="${m.l}" y="${m.t}" width="${W - m.l - m.r}" height="${H - m.t - m.b}" fill="transparent"/>`;
+  svg.setAttribute("viewBox", `0 0 ${W} ${H}`);
+  svg.innerHTML = s;
+  const dica = $("dica"), cruz = $("cruz"), pt = $("cruzPt");
+  $("alvo").onmousemove = (ev) => {
+    if (!vis.length) return;
+    const r = svg.getBoundingClientRect(), xs = (ev.clientX - r.left) * (W / r.width);
+    const alvo = x0 + (xs - m.l) / (W - m.l - m.r) * (x1 - x0);
+    let b = vis[0]; for (const p of vis) if (Math.abs(p.ts - alvo) < Math.abs(b.ts - alvo)) b = p;
+    const cx = X(b.ts), cy = Y(b.temp_c), st = classificar(b.temp_c);
+    cruz.setAttribute("x1", cx); cruz.setAttribute("x2", cx); cruz.style.display = "";
+    pt.setAttribute("cx", cx); pt.setAttribute("cy", cy); pt.style.display = "";
+    dica.innerHTML = `<b class="num">${n1(b.temp_c)} °C</b> · ${st.txt}<br><span style="color:var(--ink-3)">${ddhh(b.ts)}</span>`;
+    dica.style.display = "block";
+    dica.style.left = Math.min(Math.max(cx * r.width / W - dica.offsetWidth / 2, 0), r.width - dica.offsetWidth) + "px";
+    dica.style.top = Math.max(cy * r.height / H - dica.offsetHeight - 12, 0) + "px";
+  };
+  $("alvo").onmouseleave = () => { dica.style.display = "none"; cruz.style.display = "none"; pt.style.display = "none"; };
+}
+window.addEventListener("resize", desenharGrafico);
+
+// períodos e CSV
+document.querySelectorAll("[data-horas]").forEach(b => b.onclick = () => {
+  document.querySelectorAll("[data-horas]").forEach(x => x.setAttribute("aria-pressed", x === b));
+  horas = Number(b.dataset.horas); carregarHistorico(); carregarResumo();
+});
+document.querySelectorAll("[data-horas-a]").forEach(b => b.onclick = () => {
+  document.querySelectorAll("[data-horas-a]").forEach(x => x.setAttribute("aria-pressed", x === b));
+  horasAlertas = Number(b.dataset.horasA); carregarAlertas();
+});
+$("btnCsv").onclick = async () => {
+  const h = await getJson(`/historico?horas=${horas}`);
+  const linhas = ["data_hora;temp_c;umid_pct;porta_aberta"].concat(h.pontos.map(p => `${ddhh(p.ts)};${n1(p.temp_c)};${p.umid_pct ?? ""};${p.porta_aberta ? "sim" : "nao"}`));
+  const a = Object.assign(document.createElement("a"), { href: URL.createObjectURL(new Blob(["﻿" + linhas.join("\n")], { type: "text/csv;charset=utf-8" })), download: `vacinasegura_${horas}h.csv` });
+  a.click(); URL.revokeObjectURL(a.href);
+};
+
+// API e testes
+function formatarJson(txt) { try { return JSON.stringify(JSON.parse(txt), null, 2); } catch { return txt; } }
+const campos = (lista) => `<table class="campos-tab"><thead><tr><th>Campo</th><th>Tipo</th><th>Descrição</th></tr></thead><tbody>${
+  lista.map(([c, t, d]) => `<tr><td>${c}</td><td>${t}</td><td>${d}</td></tr>`).join("")}</tbody></table>`;
+
+const TOPICOS = [
+  { t: "telemetria", m: "sub", resumo: "ESP32 → painel · a cada leitura",
+    campos: [["id", "texto", "dispositivo"], ["ts", "número", "horário (epoch UTC, segundos)"], ["temp_c", "número | null", "temperatura (°C); null se o sensor falhou"],
+             ["umid_pct", "número | null", "umidade (%)"], ["dist_cm", "número | null", "distância até a porta"], ["porta_aberta", "booleano", ""], ["alarme", "booleano", ""]] },
+  { t: "estado", m: "sub", resumo: "ESP32 → painel · retido · Last Will {\"online\":false}",
+    campos: [["online", "booleano", "false = publicado pelo broker (Last Will)"], ["alarme", "booleano", ""], ["silenciado", "booleano", ""],
+             ["modo", "texto", "real | demo"], ["nonce", "texto", "desafio que o próximo comando deve assinar"], ["ts", "número", ""]] },
+  { t: "alerta", m: "sub", resumo: "ESP32 → painel · cooldown de 10 min (demo 60 s)",
+    campos: [["tipo", "texto", "temperatura | porta | sensor_falha"], ["temp_c", "número | null", ""], ["desde_ts", "número", "quando começou"], ["ts", "número", ""]] },
+  { t: "comando", m: "pub", resumo: "painel → ESP32 · assinado", editavel: true,
+    campos: [["cmd", "texto", "silenciar | modo"], ["valor", "texto", "real | demo (só no cmd modo)"], ["id", "texto", "até 32 caracteres; volta no ack"],
+             ["nonce", "texto", "copiado do último estado"], ["assinatura", "texto", "HMAC-SHA256(senha, \"cmd|valor|id|nonce\") em hex"]] },
+  { t: "ack", m: "sub", resumo: "ESP32 → painel · confirma o comando",
+    campos: [["id", "texto", "o mesmo id do comando"], ["ok", "booleano", ""], ["ts", "número", ""]] },
+  { t: "lote", m: "sub", interno: true, resumo: "ESP32 → nuvem · histórico em lote (retido, assinado)",
+    texto: "Mensagem: <assinatura>\\n{\"id\":\"L5-38857\",\"leituras\":[{\"ts\":…,\"temp_c\":5.0,\"umid_pct\":60,\"porta_aberta\":false}],\"eventos\":[…]}. Assinatura = HMAC-SHA256(INGEST_TOKEN, json)." },
+  { t: "lote_ack", m: "sub", interno: true, resumo: "nuvem → ESP32 · gravado no D1 (assinado)", texto: "Mensagem: <assinatura>\\n{\"id\":\"L5-38857\",\"ok\":true,\"gravadas\":1}" },
+  { t: "config", m: "sub", interno: true, resumo: "nuvem → ESP32 · limites do KV (retido, assinado)", texto: "Mensagem: <assinatura>\\n{\"t_max\":8,\"t_min\":2,\"t_desliga_max\":7,\"t_desliga_min\":3,\"tempo_alarme_s\":300,\"tempo_porta_s\":60,\"ts\":…}" },
+];
+$("listaTopicos").innerHTML = TOPICOS.map(x => `
+  <details class="endpoint">
+    <summary><span class="metodo ${x.m}">${x.m === "pub" ? "PUBLICA" : x.interno ? "INTERNO" : "ASSINA"}</span><span class="caminho">…/${x.t}</span><span class="resumo-ep">${x.resumo}</span></summary>
+    <div class="corpo">
+      ${x.campos ? campos(x.campos) : `<p class="desc" style="margin:0">${esc(x.texto)}</p>`}
+      ${x.editavel ? `
+        <div class="rotulo">Mensagem a enviar</div>
+        <textarea id="txtComando" spellcheck="false">{\n  "cmd": "silenciar",\n  "id": "teste1"\n}</textarea>
+        <div class="linha-acao">
+          <label><input type="checkbox" id="chkAssinar" checked> Assinar com a senha e o nonce atual</label>
+          <button class="btn primario" id="btnPublicar">Publicar</button>
+        </div>
+        <div class="retorno" id="respPublicar"></div>
+        <div class="rotulo">Enviado</div><pre class="json" id="enviadoComando">—</pre>` : ""}
+      ${x.interno ? "" : `<div class="rotulo">Último recebido</div><pre class="json" id="ultimo-${x.t}">—</pre>`}
+    </div>
+  </details>`).join("");
+
+$("btnPublicar").onclick = async () => {
+  const el = $("respPublicar");
+  let msg;
+  try { msg = JSON.parse($("txtComando").value); } catch { retorno(el, "erro", "JSON inválido.", "critico"); return; }
+  if (!cliente.connected) { retorno(el, "erro", "Painel sem conexão com o broker.", "critico"); return; }
+  if (!msg.id) msg.id = crypto.getRandomValues(new Uint32Array(1))[0].toString(16);
+  if ($("chkAssinar").checked) {
+    const senha = localStorage.getItem("vs_senha");
+    if (!senha) { retorno(el, "erro", "Cadastre a senha dos comandos em Administração.", "aviso"); return; }
+    if (!estado.nonce) { retorno(el, "erro", "Sem nonce: dispositivo offline.", "critico"); return; }
+    msg.nonce = estado.nonce;
+    msg.assinatura = await assinar(senha, `${msg.cmd}|${msg.valor || ""}|${msg.id}|${msg.nonce}`);
+  }
+  const texto = JSON.stringify(msg);
+  $("enviadoComando").textContent = JSON.stringify(msg, null, 2);
+  retorno(el, "", "Publicado. Aguardando ack…", "relogio");
+  const timer = setTimeout(() => { pendentes.delete(String(msg.id)); retorno(el, "erro", "Sem ack em 5 s: o ESP32 ignorou o comando (o motivo aparece no Serial).", "aviso"); }, ESPERA_ACK_MS);
+  pendentes.set(String(msg.id), { el, timer, t0: Date.now() });
+  cliente.publish(`${BASE}/comando`, texto);
+};
+
+const ROTAS = [
+  { m: "get", c: "/historico?horas=1", resumo: "temperatura por minuto · pública (só leitura)" },
+  { m: "get", c: "/resumo?horas=24", resumo: "máx, mín e minutos fora por hora · pública" },
+  { m: "get", c: "/alertas?horas=24", resumo: "alertas do período · pública" },
+  { m: "post", c: "/leituras", resumo: "grava leituras · exige INGEST_TOKEN", corpo: '[{"id":"geladeira01","ts":1794738844,"temp_c":5.4,"umid_pct":61,"porta_aberta":false}]', semToken: true },
+  { m: "get", c: `/config/${DISP}`, resumo: "limites atuais · exige token", admin: true },
+  { m: "put", c: `/config/${DISP}`, resumo: "altera limites · exige ADMIN_TOKEN", admin: true, corpo: '{"t_max":8,"t_min":2,"t_desliga_max":7,"t_desliga_min":3,"tempo_alarme_s":300,"tempo_porta_s":60}' },
+];
+$("listaRotas").innerHTML = ROTAS.map((r, i) => `
+  <details class="endpoint">
+    <summary><span class="metodo ${r.m}">${r.m.toUpperCase()}</span><span class="caminho">${esc(r.c)}</span><span class="resumo-ep">${r.resumo}</span></summary>
+    <div class="corpo">
+      ${r.corpo ? `<div class="rotulo">Corpo (JSON)</div><textarea id="corpo-${i}" spellcheck="false">${esc(JSON.stringify(JSON.parse(r.corpo), null, 2))}</textarea>` : ""}
+      <div class="linha-acao">
+        ${r.admin ? `<label><input type="checkbox" id="tk-${i}" checked> Usar o token de administração salvo</label>` : ""}
+        ${r.semToken ? `<span class="desc" style="margin:0">Enviado <b>sem token</b> — o esperado é 401.</span>` : ""}
+        <button class="btn primario" data-rota="${i}">Executar</button>
+        <span id="st-${i}"></span>
+      </div>
+      <pre class="json" id="res-${i}">—</pre>
+    </div>
+  </details>`).join("");
+
+document.querySelectorAll("[data-rota]").forEach(b => b.onclick = async () => {
+  const i = Number(b.dataset.rota), r = ROTAS[i];
+  const op = { method: r.m.toUpperCase(), headers: {}, cache: "no-store" };
+  if (r.corpo) { op.body = $("corpo-" + i).value; op.headers["Content-Type"] = "application/json"; }
+  if (r.admin && $("tk-" + i).checked && localStorage.getItem("vs_admin")) op.headers.Authorization = "Bearer " + localStorage.getItem("vs_admin");
+  $("res-" + i).textContent = "…";
+  try {
+    const resp = await fetch(r.c, op);
+    const txt = await resp.text();
+    $("st-" + i).innerHTML = `<span class="status-http ${resp.ok ? "s2" : "s4"}">HTTP ${resp.status}</span>`;
+    $("res-" + i).textContent = formatarJson(txt).slice(0, 4000);
+  } catch (e) { $("res-" + i).textContent = "Erro de rede: " + e.message; }
+});
+
+function carregarTudo() { carregarHistorico(); carregarResumo(); carregarAlertas(); }
+carregarTudo();
+setInterval(carregarTudo, 60000);
+setInterval(desenharMini, 15000);
+const inicial = location.hash.slice(1);
+if (TITULOS[inicial]) irPara(inicial);
+</script>
+</body>
+</html>

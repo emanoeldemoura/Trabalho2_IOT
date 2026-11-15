@@ -1,0 +1,12 @@
+# Segredos (NUNCA versionar)
+firmware/include/secrets.h
+worker/.dev.vars
+.env
+
+# Build / dependências
+.pio/
+firmware/.pio/
+node_modules/
+worker/.wrangler/
+.vscode/
+

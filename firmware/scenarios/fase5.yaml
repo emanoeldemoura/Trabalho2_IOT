@@ -1,0 +1,33 @@
+# Fase 5 - critério "pronto quando":
+# derrubar o Wi-Fi por 60 s (botão de teste) não deixa buraco no histórico.
+# O histórico vai por MQTT (lote assinado) e o Worker grava no D1 a cada minuto.
+name: Fase 5 - fila offline sem buraco no historico
+version: 1
+author: VacinaSegura
+
+steps:
+  - wait-serial: 'MQTT conectado'
+  - wait-serial: 'Config da nuvem'
+  - wait-serial: 'gravado na nuvem'
+  # aperta o botão azul de teste: derruba o Wi-Fi por 60 s
+  - set-control:
+      part-id: btn1
+      control: pressed
+      value: 1
+  - delay: 300ms
+  - set-control:
+      part-id: btn1
+      control: pressed
+      value: 0
+  - wait-serial: '### TESTE: Wi-Fi derrubado'
+  # durante a queda a temperatura sobe: o alarme LOCAL tem que funcionar
+  - set-control:
+      part-id: dht1
+      control: temperature
+      value: 10
+  - wait-serial: '*** ALARME LIGADO (temperatura)'
+  - wait-serial: '### TESTE: religando o Wi-Fi'
+  - wait-serial: 'MQTT conectado'
+  # a fila acumulada durante a queda é enviada e confirmada
+  - wait-serial: 'gravado na nuvem'
+  - delay: 2000ms

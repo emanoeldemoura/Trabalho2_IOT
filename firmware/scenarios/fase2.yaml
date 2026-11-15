@@ -1,0 +1,30 @@
+# Fase 2 - critério "pronto quando":
+# 10 °C por 20 s liga o alarme; 6 °C desliga; porta aberta 10 s gera alerta.
+name: Fase 2 - decisao local
+version: 1
+author: VacinaSegura
+
+steps:
+  - wait-serial: 'Modo: demonstracao'
+
+  # 1) temperatura sobe para 10 °C -> alarme só depois de ~20 s
+  - set-control:
+      part-id: dht1
+      control: temperature
+      value: 10
+  - wait-serial: '>>> ALERTA temperatura'
+  - wait-serial: '*** ALARME LIGADO (temperatura)'
+
+  # 2) volta para 6 °C (dentro de 3..7) -> alarme desliga
+  - set-control:
+      part-id: dht1
+      control: temperature
+      value: 6
+  - wait-serial: '*** ALARME DESLIGADO'
+
+  # 3) porta abre (20 cm) -> alerta após ~10 s
+  - set-control:
+      part-id: ultrasonic1
+      control: distance
+      value: 20
+  - wait-serial: '>>> ALERTA porta'

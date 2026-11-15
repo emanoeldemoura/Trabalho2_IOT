@@ -1,0 +1,27 @@
+# Fase 3 - critério "pronto quando":
+# mensagens chegam no broker e o comando "silenciar" gera "ack".
+# Também testa a segurança dos comandos (broker público):
+# sem assinatura, assinatura falsa, nonce antigo (replay) e comando repetido.
+# (rodar junto com um cliente MQTT que envia os comandos ao ver alarme=true)
+name: Fase 3 - MQTT com TLS e comando assinado
+version: 1
+author: VacinaSegura
+
+steps:
+  - wait-serial: 'MQTT conectado'
+  # força um alarme para o painel ter o que silenciar
+  - set-control:
+      part-id: dht1
+      control: temperature
+      value: 10
+  - wait-serial: '*** ALARME LIGADO (temperatura)'
+  # ataques: todos devem ser ignorados
+  - wait-serial: 'Comando ignorado: assinatura invalida'
+  - wait-serial: 'Comando ignorado: assinatura invalida'
+  - wait-serial: 'Comando ignorado: nonce vencido'
+  # comando legítimo do painel
+  - wait-serial: 'Comando: silenciar'
+  - wait-serial: 'ack enviado (id=ok123)'
+  # repetição do comando válido (replay)
+  - wait-serial: 'Comando ignorado: nonce vencido'   # replay do comando valido: o desafio ja mudou
+  - delay: 2000ms

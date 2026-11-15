@@ -1,0 +1,10 @@
+# Na falha: diagrama sem o fio de dados do DHT22 (scenarios/diagram_sem_dht.json)
+# Esperado: 3 leituras NaN -> alarme ligado + alerta sensor_falha (estado seguro)
+name: Falha do sensor DHT22
+version: 1
+author: VacinaSegura
+steps:
+  - wait-serial: 'Modo: demonstracao'
+  - wait-serial: '!!! Sensor de temperatura sem resposta'
+  - wait-serial: '>>> ALERTA sensor_falha'
+  - wait-serial: '*** ALARME LIGADO (sensor_falha)'
